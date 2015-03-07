@@ -1,0 +1,57 @@
+#+TITLE:README.org
+#+AUTHOR:n-critser
+#+BEGIN_SRC
+#+END_SRC
+
+
+
+* WhiteWhale DevOps README File
+* App/Web server config links
+** http://ruby-journal.com/how-to-setup-rails-app-with-puma-and-nginx/
+*** Replace "sudo rm /etc/nginx/conf.d/default.conf"
+#+BEGIN_SRC    
+upstream my_app {
+  server unix:///var/run/my_app.sock;
+}
+
+server {
+  listen 80;
+  server_name my_app_url.com; # change to match your URL
+  root /var/www/my_app/public; # I assume your app is located at this location
+
+  location / {
+    proxy_pass http://my_app; # match the name of upstream directive which is defined above
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  location ~* ^/assets/ {
+    # Per RFC2616 - 1 year maximum expiry
+    expires 1y;
+    add_header Cache-Control public;
+
+    # Some browsers still send conditional-GET requests if there's a
+    # Last-Modified header or an ETag header even if they haven't
+    # reached the expiry date sent in the Expires header.
+    add_header Last-Modified "";
+    add_header ETag "";
+    break;
+  }
+}
+#+END_SRC
+*** REstart nginx "sudo /etc/init.id/nginx restart" 
+This didn't work on Fedora 20 , possibly due to the way nginx is installed. instead try sudo nginx restart or sudo service nginx restart.
+*** Start the app 
+TEST- this is not in demon mode
+#+BEGIN_SRC
+cd /var/www/my_app
+bundle exec puma -e production -b unix:///var/run/my_app.sock
+#+END_SRC
+
+Production- this is demon mode "-d" parameter 
+#+BEGIN_SRC
+bundle exec puma -e production -d -b unix:///var/run/my_app.sock
+
+//Check process is running 
+ps aux | grep puma
+#+END_SRC
