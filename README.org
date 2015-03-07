@@ -15,10 +15,10 @@
 
 * App/Web server config info
 ** Links
-https://coderwall.com/p/ttrhow/deploying-rails-app-using-nginx-puma-and-capistrano-3
-https://www.digitalocean.com/community/tutorials/how-to-set-up-nginx-virtual-hosts-server-blocks-on-centos-6
-http://nginx.org/en/docs/
-http://ruby-journal.com/how-to-setup-rails-app-with-puma-and-nginx/
+-  https://coderwall.com/p/ttrhow/deploying-rails-app-using-nginx-puma-and-capistrano-3
+- https://www.digitalocean.com/community/tutorials/how-to-set-up-nginx-virtual-hosts-server-blocks-on-centos-6
+- http://nginx.org/en/docs/
+- http://ruby-journal.com/how-to-setup-rails-app-with-puma-and-nginx/
 *** Replace "sudo rm /etc/nginx/conf.d/default.conf"
 #+BEGIN_SRC    
 upstream my_app {
