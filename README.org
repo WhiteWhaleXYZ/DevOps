@@ -15,23 +15,30 @@
 
 * App/Web server config info
 ** Links
--  https://coderwall.com/p/ttrhow/deploying-rails-app-using-nginx-puma-and-capistrano-3
+- https://coderwall.com/p/ttrhow/deploying-rails-app-using-nginx-puma-and-capistrano-3
+
+- https://gitlab.com/gitlab-org/gitlab-ce/blob/5-4-stable/config/puma.rb.example
+
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-nginx-virtual-hosts-server-blocks-on-centos-6
 - http://nginx.org/en/docs/
 - http://ruby-journal.com/how-to-setup-rails-app-with-puma-and-nginx/
 *** Replace "sudo rm /etc/nginx/conf.d/default.conf"
+** webserver-config
 #+BEGIN_SRC    
-upstream my_app {
-  server unix:///var/run/my_app.sock;
+upstream WhiteWhale {
+  server unix:///home/<user>/WhiteWhale/tmp/puma/sock;
+
 }
 
 server {
   listen 80;
-  server_name my_app_url.com; # change to match your URL
-  root /var/www/my_app/public; # I assume your app is located at this location
+  server_name WhiteWhale.xyz; # change to match your URL
+  root /home/<user>/WhiteWhale/public; # I assume your app is located at this location
+  access_log /var/log/nginx/nginx.access.log;
+  error_log  /var/log/nginx/nginx.error.log;
 
   location / {
-    proxy_pass http://my_app; # match the name of upstream directive which is defined above
+    proxy_pass http://WhiteWhale; # match the name of upstream directive which is defined above
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   }
@@ -52,17 +59,18 @@ server {
 #+END_SRC
 *** REstart nginx "sudo /etc/init.id/nginx restart" 
 This didn't work on Fedora 20 , possibly due to the way nginx is installed. instead try sudo nginx restart or sudo service nginx restart.
-*** Start the app 
-TEST- this is not in demon mode
-#+BEGIN_SRC
-cd /var/www/my_app
-bundle exec puma -e production -b unix:///var/run/my_app.sock
-#+END_SRC
 
-Production- this is demon mode "-d" parameter 
-#+BEGIN_SRC
-bundle exec puma -e production -d -b unix:///var/run/my_app.sock
+** appserver-config
 
+* Server-Commands
+** appserver
+Run Server
+#+BEGIN_SRC
+$ bundle exec puma -C /home/<user>/WhiteWhale/config/puma.rb 
 //Check process is running 
 ps aux | grep puma
 #+END_SRC
+
+
+
+** webserver
