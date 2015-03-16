@@ -3,7 +3,36 @@
 #+BEGIN_SRC
 #+END_SRC
 
+* Server Logs
+    #+BEGIN_SRC
+    $ mkdir /home/<user>/webLogs
+    #+END_SRC
+** Log rotation
+    from : https://www.digitalocean.com/community/tutorials/how-to-configure-logging-and-log-rotation-in-nginx-on-an-ubuntu-vps
+    #+BEGIN_SRC
+    mv /path/to/access.log /path/to/access.log.0
+    kill -USR1 `cat /var/run/nginx.pid`
+    sleep 1
+    [ post-rotation processing of old log file ]
+    #+END_SRC
+* General Commands
+- is the webserver running
+  #+BEGIN_SRC
+  $ ps aux | grep nginx
+  #+END_SRC
+- grepping through directories
+    #+BEGIN_SRC
+    $ find * -type f | xargs grep "development"
+    #+END_SRC
+- find ip address 
+    #+BEGIN_SRC
+    $ ip addr show eth0 | grep inet | awk '{ print $2; }' | sed 's/\/.*$//'
+    #+END_SRC
 
+    or 
+    #+BEGIN_SRC
+    $ ifconfig | grep inet 
+    #+END_SRC
 
 * WhiteWhale DevOps README File
 - OS : Fedora,CentoOS,Redhat
@@ -15,6 +44,7 @@
 
 * App/Web server config info
 ** Links
+- Install Nginx : https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-centos-7
 - https://coderwall.com/p/ttrhow/deploying-rails-app-using-nginx-puma-and-capistrano-3
 
 - https://gitlab.com/gitlab-org/gitlab-ce/blob/5-4-stable/config/puma.rb.example
@@ -63,7 +93,11 @@ This didn't work on Fedora 20 , possibly due to the way nginx is installed. inst
 ** appserver-config
 
 * Server-Commands
+
 ** appserver
+Generate secret key and make as environment variable
+http://stackoverflow.com/questions/23180650/how-to-solve-error-missing-secret-key-base-for-production-environment-on-h
+$ RAILS_ENV=production rake secret
 Run Server
 #+BEGIN_SRC
 $ bundle exec puma -C /home/<user>/WhiteWhale/config/puma.rb 
@@ -73,4 +107,39 @@ ps aux | grep puma
 
 
 
+
 ** webserver
+    #+BEGIN_SRC
+    // REstart server 
+    $ sudo systemctl restart nginx
+    #+END_SRC
+
+
+
+
+* SSL Related 
+1. do we have open ssl 
+    #+BEGIN_SRC
+    $ which openssl
+    /usr/bin/openssl
+    #+END_SRC
+2. if not : 
+    #+BEGIN_SRC
+    $ sudo yum install openssl 
+    #+END_SRC
+3. Generating keys and putting them in the right spot
+    #+BEGIN_SRC
+    # Generate private key 
+    $ sudo openssl genrsa -out ca.key 2048 
+
+    # Generate CSR 
+    $ sudo openssl req -new -key ca.key -out ca.csr
+
+    # Generate Self Signed Key
+    $ sudo openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+    #+END_SRC
+
+4. make a spot for the keys under the  nginx dir
+    #+BEGIN_SRC
+    $ mkdir /etc/nginx/ssl
+    #+END_SRC
