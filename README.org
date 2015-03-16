@@ -3,6 +3,10 @@
 #+BEGIN_SRC
 #+END_SRC
 
+* Software
+#+BEGIN_SRC
+sudo yum install -y ImageMagick-libs
+#+END_SRC
 * Server Logs
     #+BEGIN_SRC
     $ mkdir /home/<user>/webLogs
