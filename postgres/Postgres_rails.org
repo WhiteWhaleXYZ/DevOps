@@ -1,0 +1,359 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: 
+#+AUTHOR: n-critser
+#+TITLE: Postgres_rails.org
+
+* activeRecord-info
+http://edgeguides.rubyonrails.org/4_2_release_notes.html#active-record-notable-changes
+
+* postgres links
+#+BEGIN_SRC:
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-two-node-lepp-stack-on-centos-7
+
+http://www.postgresql.org/docs/9.4/static/server-start.html
+https://garage.godaddy.com/tech/config/how-to-install-postgresql-on-fedora/
+
+http://guides.rubyonrails.org/development_dependencies_install.html
+http://www.itzgeek.com/how-tos/linux/fedora-how-tos/install-postgresql-9-3-4-on-fedora-20.html#axzz3WA1qi4AA
+http://www.if-not-true-then-false.com/2012/install-postgresql-on-fedora-centos-red-hat-rhel/
+#+END_SRC:
+** heroku
+https://devcenter.heroku.com/articles/heroku-postgresql
+https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases
+
+* http://www.postgresql.org/ : http://www.postgresql.org/docs/9.4/static/index.html
+
+http://www.postgresql.org/docs/9.4/static/installation.html
+http://www.postgresql.org/docs/9.4/static/install-short.html
+
+* Setup
+** exclude postrges from fedora.repo and fedora-updates.repo
+/etc/yum.repos.d/<whatever>
+[fedora]
+---
+exclude=postgresql*
+
+[updates]
+---
+exclude=postgresql*
+** initdb as root # /usr/pgsql-9.4/bin/postgresql94-setup initdb
+Initializing database ... OK
+
+[root@localhost 9.4]# ls 
+backups  data  initdb.log
+[root@localhost 9.4]# ls data/
+base         pg_hba.conf    pg_multixact  pg_snapshots  pg_tblspc    postgresql.auto.conf
+global       pg_ident.conf  pg_notify     pg_stat       pg_twophase  postgresql.conf
+pg_clog      pg_log         pg_replslot   pg_stat_tmp   PG_VERSION
+pg_dynshmem  pg_logical     pg_serial     pg_subtrans   pg_xlog
+[root@localhost 9.4]# ls -al data/
+total 120
+drwx------. 19 postgres root      4096 Apr 19 14:47 .
+drwx------.  4 postgres postgres  4096 Apr 19 14:47 ..
+drwx------.  5 postgres postgres  4096 Apr 19 14:47 base
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 global
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_clog
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_dynshmem
+-rw-------.  1 postgres postgres  4224 Apr 19 14:47 pg_hba.conf
+-rw-------.  1 postgres postgres  1636 Apr 19 14:47 pg_ident.conf
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_log
+drwx------.  4 postgres postgres  4096 Apr 19 14:47 pg_logical
+drwx------.  4 postgres postgres  4096 Apr 19 14:47 pg_multixact
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_notify
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_replslot
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_serial
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_snapshots
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_stat
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_stat_tmp
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_subtrans
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_tblspc
+drwx------.  2 postgres postgres  4096 Apr 19 14:47 pg_twophase
+-rw-------.  1 postgres postgres     4 Apr 19 14:47 PG_VERSION
+drwx------.  3 postgres postgres  4096 Apr 19 14:47 pg_xlog
+-rw-------.  1 postgres postgres    88 Apr 19 14:47 postgresql.auto.conf
+-rw-------.  1 postgres postgres 21257 Apr 19 14:47 postgresql.conf
+
+
+
+
+* COMMANDS
+** Rails test 
+
+$ sudo -u postgres createuser --superuser $USER
+
+
+** Start postgres Server
+*** [root@localhost TestPostgres]# systemctl start postgresql-9.4.service
+#+BEGIN_SRC:
+// AS ROOT START POSTGRES MANUALLY AFTER REBOOT 
+systemctl start postgresql-9.4.service
+#+END_SRC:
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-two-node-lepp-stack-on-centos-7
+
+*** testing :psql as postgres user :  \password = easy
+commands for psql :
+#+BEGIN_SRC:
+\? == help
+\password
+\connect
+\exit
+\quit
+postgres=# \dg  (describe roles)
+                              List of roles
+ Role name  |                   Attributes                   | Member of 
+------------+------------------------------------------------+-----------
+ postgres   | Superuser, Create role, Create DB, Replication | {}
+ whitewhale | Create DB                                      | {}
+#+END_SRC:
+
+http://www.postgresql.org/docs/9.4/static/server-start.html
+all commands found in /usr/pgsql-9.4/bin
+
+
+*** $ /usr/pgsql-9.4/bin/pg_ctl --help
+pg_ctl is a utility to initialize, start, stop, or control a PostgreSQL server.
+
+Usage:
+  pg_ctl init[db]               [-D DATADIR] [-s] [-o "OPTIONS"]
+  pg_ctl start   [-w] [-t SECS] [-D DATADIR] [-s] [-l FILENAME] [-o "OPTIONS"]
+  pg_ctl stop    [-W] [-t SECS] [-D DATADIR] [-s] [-m SHUTDOWN-MODE]
+  pg_ctl restart [-w] [-t SECS] [-D DATADIR] [-s] [-m SHUTDOWN-MODE]
+                 [-o "OPTIONS"]
+  pg_ctl reload  [-D DATADIR] [-s]
+  pg_ctl status  [-D DATADIR]
+  pg_ctl promote [-D DATADIR] [-s]
+  pg_ctl kill    SIGNALNAME PID
+
+Common options:
+  -D, --pgdata=DATADIR   location of the database storage area
+  -s, --silent           only print errors, no informational messages
+  -t, --timeout=SECS     seconds to wait when using -w option
+  -V, --version          output version information, then exit
+  -w                     wait until operation completes
+  -W                     do not wait until operation completes
+  -?, --help             show this help, then exit
+(The default is to wait for shutdown, but not for start or restart.)
+
+If the -D option is omitted, the environment variable PGDATA is used.
+
+Options for start or restart:
+  -c, --core-files       allow postgres to produce core files
+  -l, --log=FILENAME     write (or append) server log to FILENAME
+  -o OPTIONS             command line options to pass to postgres
+                         (PostgreSQL server executable) or initdb
+  -p PATH-TO-POSTGRES    normally not necessary
+
+Options for stop or restart:
+  -m, --mode=MODE        MODE can be "smart", "fast", or "immediate"
+
+Shutdown modes are:
+  smart       quit after all clients have disconnected
+  fast        quit directly, with proper shutdown
+  immediate   quit without complete shutdown; will lead to recovery on restart
+
+Allowed signal names for kill:
+  ABRT HUP INT QUIT TERM USR1 USR2
+
+Report bugs to <pgsql-bugs@postgresql.org>.
+
+- below didn't work 
+$ postgres -D /usr/local/pgsql/data
+$ postgres -D /usr/local/pgsql/data >logfile 2>&1 &
+pg_ctl start -l logfile
+*** bash-4.2$ /usr/pgsql-9.4/bin/pg_ctl -D /var/lib/pgsql/9.4/data/ start
+
+could not change directory to "/home/n-critser/Dev/Nick_Git/TestPostgres": Permission denied
+pg_ctl: directory "/var/lib/pgsql/9.4/data" is not a database cluster directory
+
+*** pg_ctl -D /your/postgres/data/directory start 
+** roles
+CREATE ROLE name;
+** Install USING  Yum package manager
+*** 1 KEEP Yum from updating Postgres
+Add exclude to /etc/yum.repos.d/fedora.repo file [fedora] section:
+#+BEGIN_SRC:
+[fedora]
+...
+exclude=postgresql*
+ 
+
+Add exclude to /etc/yum.repos.d/fedora-updates.repo file [updates] section:
+ 
+[updates]
+...
+exclude=postgresql*
+#+END_SRC:
+*** 2 Get the RPM
+#+BEGIN_SRC:
+# sudo rpm -Uvh http://yum.postgresql.org/9.4/fedora/fedora-20-x86_64/pgdg-fedora94-9.4-1.noarch.rpm
+#+END_SRC:
+*** 3 After getting the RPM - Install with Yum
+#+BEGIN_SRC:
+# sudo yum -y install postgresql94 postgresql94-server postgresql94-contrib
+# sudo yum -y install postgresql94-devel
+#+END_SRC:   
+* Getting pg on rails
+Below are needed to avoid Bundle-Error: Gem::Ext::BuildError: ERROR: Failed to build gem native extension  
+--NEED-- Requires # sudo yum install postgresql94-devel
+--NEED-- must use pgconfig path:  /usr/pgsql-9.4/bin/pg_config
+** Standalone pg gem install
+#+BEGIN_SRC: 
+$ gem install --user-install pg --  --with-pg-config=/usr/pgsql-9.4/bin/pg_config
+$ bundle install --path vendor/bundle
+#+END_SRC:
+* Bundle Error : Gem::Ext::BuildError: ERROR: Failed to build gem native extension.
+
+    /usr/local/bin/ruby -r ./siteconf20150419-4803-zahbxf.rb extconf.rb                   
+checking for pg_config... no                                                              
+No pg_config... trying anyway. If building fails, please try again with                   
+ --with-pg-config=/path/to/pg_config                                                      
+checking for libpq-fe.h... no
+Can't find the 'libpq-fe.h header                               
+extconf.rb failed                                                                  
+Could not create Makefile due to some reason, probably lack of necessary                  
+libraries and/or headers.  Check the mkmf.log file for more details.  You may             
+need configuration options.                                                               
+
+Provided configuration options:
+        --with-opt-dir
+        --without-opt-dir
+        --with-opt-include
+        --without-opt-include=${opt-dir}/include
+        --with-opt-lib
+        --without-opt-lib=${opt-dir}/lib
+        --with-make-prog
+        --without-make-prog
+        --srcdir=.
+        --curdir
+        --ruby=/usr/local/bin/$(RUBY_BASE_NAME)
+        --with-pg
+        --without-pg
+        --enable-windows-cross
+        --disable-windows-cross
+        --with-pg-config
+        --without-pg-config
+        --with-pg_config
+        --without-pg_config
+        --with-pg-dir
+        --without-pg-dir
+        --with-pg-include
+        --without-pg-include=${pg-dir}/include
+        --with-pg-lib
+        --without-pg-lib=${pg-dir}/lib
+
+extconf failed, exit code 1
+
+Gem files will remain installed in /home/n-critser/Dev/Nick_Git/WhiteWhale/vendor/bundle/ruby/2.2.0/gems/pg-0.18.1 for inspection.
+Results logged to /home/n-critser/Dev/Nick_Git/WhiteWhale/vendor/bundle/ruby/2.2.0/extensions/x86_64-linux/2.2.0-static/pg-0.18.1/gem_make.out
+An error occurred while installing pg (0.18.1), and Bundler cannot continue.
+Make sure that `gem install pg -v '0.18.1'` succeeds before bundling.
+* USER ISSUES : 
+** Test for ERROR wit user:
+http://www.cyberciti.biz/faq/psql-fatal-ident-authentication-failed-for-user/ 
+#+BEGIN_SRC:  
+RAN FROM USER postgres
+psql -U whitewhale -h localhost
+
+// Error when the user identification isn't set in ph_hba.conf
+psql: FATAL:  Ident authentication failed for user "whitewhale"
+#+END_SRC:
+
+** /var/lib/pgsql/9.4/data/pg_hba.conf 
+Default file 
+#+BEGIN_SRC:   
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# Refer to the "Client Authentication" section in the PostgreSQL
+# documentation for a complete description of this file.  A short
+# synopsis follows.
+#
+# This file controls: which hosts are allowed to connect, how clients
+# are authenticated, which PostgreSQL user names they can use, which
+# databases they can access.  Records take one of these forms:
+#
+# local      DATABASE  USER  METHOD  [OPTIONS]
+# host       DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostssl    DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostnossl  DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+#
+# (The uppercase items must be replaced by actual values.)
+#
+# The first field is the connection type: "local" is a Unix-domain
+# socket, "host" is either a plain or SSL-encrypted TCP/IP socket,
+# "hostssl" is an SSL-encrypted TCP/IP socket, and "hostnossl" is a
+# plain TCP/IP socket.
+#
+# DATABASE can be "all", "sameuser", "samerole", "replication", a
+# database name, or a comma-separated list thereof. The "all"
+# keyword does not match "replication". Access to replication
+# must be enabled in a separate record (see example below).
+#
+# USER can be "all", a user name, a group name prefixed with "+", or a
+# comma-separated list thereof.  In both the DATABASE and USER fields
+# you can also write a file name prefixed with "@" to include names
+# from a separate file.
+#
+# ADDRESS specifies the set of hosts the record matches.  It can be a
+# host name, or it is made up of an IP address and a CIDR mask that is
+# an integer (between 0 and 32 (IPv4) or 128 (IPv6) inclusive) that
+# specifies the number of significant bits in the mask.  A host name
+# that starts with a dot (.) matches a suffix of the actual host name.
+# Alternatively, you can write an IP address and netmask in separate
+# columns to specify the set of hosts.  Instead of a CIDR-address, you
+# can write "samehost" to match any of the server's own IP addresses,
+# or "samenet" to match any address in any subnet that the server is
+# directly connected to.
+#
+# METHOD can be "trust", "reject", "md5", "password", "gss", "sspi",
+# "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
+# "password" sends passwords in clear text; "md5" is preferred since
+# it sends encrypted passwords.
+#
+# OPTIONS are a set of options for the authentication in the format
+# NAME=VALUE.  The available options depend on the different
+# authentication methods -- refer to the "Client Authentication"
+# section in the documentation for a list of which options are
+# available for which authentication methods.
+#
+# Database and user names containing spaces, commas, quotes and other
+# special characters must be quoted.  Quoting one of the keywords
+# "all", "sameuser", "samerole" or "replication" makes the name lose
+# its special character, and just match a database or username with
+# that name.
+#
+# This file is read on server startup and when the postmaster receives
+# a SIGHUP signal.  If you edit the file on a running system, you have
+# to SIGHUP the postmaster for the changes to take effect.  You can
+# use "pg_ctl reload" to do that.
+
+# Put your actual configuration here
+# ----------------------------------
+#
+# If you want to allow non-local connections, you need to add more
+# "host" records.  In that case you will also need to make PostgreSQL
+# listen on a non-local interface via the listen_addresses
+# configuration parameter, or via the -i or -h command line switches.
+#+END_SRC:
+
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            ident
+# IPv6 local connections:
+host    all             all             ::1/128                 ident
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#local   replication     postgres                                peer
+#host    replication     postgres        127.0.0.1/32            ident
+#host    replication     postgres        ::1/128                 ident
+* Rails DB interaction
+** Rake db
+#+BEGIN_SRC:  
+$ bundle exec rake db:create
+$ bundle exec rake db:migrate
+#+END_SRC:
